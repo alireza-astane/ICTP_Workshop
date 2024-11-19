@@ -29,12 +29,13 @@ class Planet:
 
 class System:
     G  = 6.67430e-11
-    time_step = 1
+    time_step = 60*60
     
-    def __init__(self):
+    def __init__(self,time = 0):
         self.planets = []
         self.M_Sun = 1.989e30
         self.Pos_Sun = np.array([0,0])
+        self.time = time
         
     def add_planet(self,planet):
         self.planets.append(planet)
@@ -54,14 +55,16 @@ class System:
     def update(self):
         for planet in self.planets:
             self.update_planet(planet)
-            time = time + self.time_step
+            self.time = self.time + self.time_step
     
     def run(self,n):
-        trajectory = np.zeros((n,len(self.planets),2))
+        trajectory = np.zeros((n,len(self.planets),4))
         for i in tqdm(range(n)):
             self.update()
             for j,planet in enumerate(self.planets):
-                trajectory[i,j] = planet.position
+                trajectory[i,j,:2] = planet.position
+                trajectory[i,j,2] = planet.mass/1e26
+                trajectory[i,j,2] = planet.temp
 
         return trajectory
 
@@ -72,21 +75,47 @@ class System:
 
     def visualize(self,trajectory):
         for i in range(len(self.planets)):
-            plt.plot(trajectory[:,i,0],trajectory[:,i,1],label = self.planets[i].name)
+            plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=trajectory[:,i,2])
+
+        plt.legend([p.name for p in self.planets])
         plt.show()
 
 
 
 solar_system = System()
 
+# simulating closer to real world scenario
+
+# earth = Planet("Earth",M_Earth,np.array([0,earth_sun_distance]),earth_average_speed * solar_system.get_random_direction())
+# jupiter = Planet("Jupiter",M_Jupiter,np.array([0,jupyter_sun_distance]),jupiter_average_speed * solar_system.get_random_direction())
+# saturn = Planet("Saturn",M_Saturn,np.array([0,saturn_sun_distance]),saturn_average_speed * solar_system.get_random_direction())
+
+# solar_system.add_planet(earth)
+# solar_system.add_planet(jupiter)
+# solar_system.add_planet(saturn)
+
+
+
+# trajectory = solar_system.run(30*365)
+# solar_system.visualize(trajectory)
+
+
+# simulating a simpler scenario as class requirement
 
 earth = Planet("Earth",M_Earth,np.array([0,earth_sun_distance]),earth_average_speed * solar_system.get_random_direction())
-jupiter = Planet("Jupiter",M_Jupiter,np.array([0,jupyter_sun_distance]),jupiter_average_speed * solar_system.get_random_direction())
-saturn = Planet("Saturn",M_Saturn,np.array([0,saturn_sun_distance]),saturn_average_speed * solar_system.get_random_direction())
+jupiter = Planet("Jupiter",M_Jupiter,np.array([0,earth_sun_distance]),1.1*earth_average_speed * solar_system.get_random_direction())
+saturn = Planet("Saturn",M_Saturn,np.array([0,earth_sun_distance]),earth_average_speed * solar_system.get_random_direction())
+
+solar_system.add_planet(earth)
+solar_system.add_planet(jupiter)
+solar_system.add_planet(saturn)
 
 
-trajectory = solar_system.run(1000)
+print(earth.mass,jupiter.mass,saturn.mass)
+
+trajectory = solar_system.run(365*24)
 solar_system.visualize(trajectory)
+
 
         
 
