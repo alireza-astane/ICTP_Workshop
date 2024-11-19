@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 G  = 6.67430e-11
-M__Sun = 1.989e30
+M_Sun = 1.989e30
 M_Earth = 5.972e24
 M_Jupiter = 1.898e27
 M_Saturn = 5.683e26
@@ -63,8 +63,9 @@ class System:
             self.update()
             for j,planet in enumerate(self.planets):
                 trajectory[i,j,:2] = planet.position
-                trajectory[i,j,2] = planet.mass/1e26
-                trajectory[i,j,2] = planet.temp
+                trajectory[i,j,2] = np.log(planet.mass/M_Earth) + 1
+                trajectory[i,j,3] = planet.temp
+                # print(planet.temp)
 
         return trajectory
 
@@ -103,15 +104,13 @@ solar_system = System()
 # simulating a simpler scenario as class requirement
 
 earth = Planet("Earth",M_Earth,np.array([0,earth_sun_distance]),earth_average_speed * solar_system.get_random_direction())
-jupiter = Planet("Jupiter",M_Jupiter,np.array([0,earth_sun_distance]),1.1*earth_average_speed * solar_system.get_random_direction())
+jupiter = Planet("Jupiter",M_Jupiter,np.array([0,earth_sun_distance]),earth_average_speed * solar_system.get_random_direction())
 saturn = Planet("Saturn",M_Saturn,np.array([0,earth_sun_distance]),earth_average_speed * solar_system.get_random_direction())
 
 solar_system.add_planet(earth)
 solar_system.add_planet(jupiter)
 solar_system.add_planet(saturn)
 
-
-print(earth.mass,jupiter.mass,saturn.mass)
 
 trajectory = solar_system.run(365*24)
 solar_system.visualize(trajectory)
