@@ -1,25 +1,31 @@
+# Importing necessary libraries
+import matplotlib.pyplot as plt 
 import numpy as np 
 from tqdm import tqdm
 
-# Importing necessary libraries
-import matplotlib.pyplot as plt 
+#physical parameters   
+# M => Mass 
+# R => Radius
 
-# Define physical parameters
 M_Sun = 1.989e30
 M_Earth = 5.972e24
 M_Jupiter = 1.898e27
 M_Saturn = 5.683e26
+
 R_Jupyter = 69911e3
 R_Saturn = 58232e3
 R_Earth = 6371e3
 R_Sun = 696340e3
-jupyter_sun_distance = 778.57e9
-saturn_sun_distance = 1.429e12
-earth_sun_distance = 1.496e11
-earth_average_speed = 29780
-jupiter_average_speed = 13070
-saturn_average_speed = 9690
-GravitationalConstant  = 6.67430e-11
+
+JUPITER_SUN_DISTANCE = 778.57e9
+SATURN_SUN_DISTANCE = 1.429e12
+EARTH_SUN_DISTANCE = 1.496e11
+
+EARTH_AVERAGE_SPEED = 29780
+JUPITER_AVERAGE_SPEED = 13070
+SATURN_AVERAGE_SPEED = 9690
+
+GRAVITATIONAL_CONSTANT = 6.67430e-11
 
 # Define Planet class
 class Planet: 
@@ -46,7 +52,7 @@ class System:
 
     def callculate_force_with_sun(self,planet):
         r = np.linalg.norm(planet.position - self.Pos_Sun)
-        return -GravitationalConstant * self.M_Sun * planet.mass / r**3 * (planet.position - self.Pos_Sun) 
+        return -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass / r**3 * (planet.position - self.Pos_Sun) 
 
     def update_planet_temp(self,planet):
         planet.temp =  1/np.linalg.norm(planet.position - self.Pos_Sun)
@@ -84,7 +90,7 @@ class System:
         colors =  (trajectory[:,:,3:] - np.min(trajectory[:,:,3:],axis=(0,1) )) / (np.max(trajectory[:,:,3:],axis=(0,1)) - np.min(trajectory[:,:,3:],axis=(0,1)))
 
         for i in range(len(self.planets)):
-            plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=trajectory[:,i,2],c=colors[:,i])
+            plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=trajectory[:,i,2],c=colors[:,i],cmap="seismic")
 
         plt.legend(["Sun"] + [p.name for p in self.planets])
 
@@ -97,9 +103,9 @@ class System:
 solar_system = System()
 
 # Create instances of the Planet class
-earth = Planet("Earth",M_Earth,np.array([earth_sun_distance,0]),earth_average_speed * solar_system.get_random_direction(),R_Earth)
-jupiter = Planet("Jupiter",M_Jupiter,np.array([earth_sun_distance,0]),earth_average_speed * solar_system.get_random_direction(),R_Jupyter)
-saturn = Planet("Saturn",M_Saturn,np.array([earth_sun_distance,0]),earth_average_speed * solar_system.get_random_direction(),R_Saturn)
+earth = Planet("Earth",M_Earth,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Earth)
+jupiter = Planet("Jupiter",M_Jupiter,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Jupyter)
+saturn = Planet("Saturn",M_Saturn,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Saturn)
 
 # Add planets to the solar system
 solar_system.add_planet(earth)
