@@ -87,8 +87,6 @@ class System:
 
         for i in range(len(self.planets)):
             plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=trajectory[:,i,2],c=colors[:,i])
-        # for j in tqdm(range(trajectory.shape[0])):=trajectory[:,i,2]
-        #     plt.scatter(trajectory[j,:,0],trajectory[j,:,1],s=trajectory[j,:,2],c=(1,0,0))
 
         plt.legend(["Sun"] + [p.name for p in self.planets])
 
@@ -109,9 +107,6 @@ saturn = Planet("Saturn",M_Saturn,np.array([earth_sun_distance,0]),earth_average
 solar_system.add_planet(earth)
 solar_system.add_planet(jupiter)
 solar_system.add_planet(saturn)
-
-
-
 
 
 trajectory = solar_system.run(365*24)
