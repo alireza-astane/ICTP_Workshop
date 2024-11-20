@@ -1,13 +1,10 @@
-
 import numpy as np 
-import matplotlib.pyplot as plt 
 from tqdm import tqdm
 
+# Importing necessary libraries
+import matplotlib.pyplot as plt 
 
-# All physical prameters are in SI units
-# M represents mass
-# R represents radius
-
+# Define physical parameters
 M_Sun = 1.989e30
 M_Earth = 5.972e24
 M_Jupiter = 1.898e27
@@ -24,6 +21,7 @@ jupiter_average_speed = 13070
 saturn_average_speed = 9690
 GravitationalConstant  = 6.67430e-11
 
+# Define Planet class
 class Planet: 
     def __init__(self,name,mass,position,velocity,radius):
         self.name = name
@@ -33,8 +31,9 @@ class Planet:
         self.temp = 0
         self.radius = radius
 
+# Define System class
 class System:
-    time_step = 60*60
+    time_step = 60 # 1 minute
     
     def __init__(self,time = 0):
         self.planets = []
@@ -83,7 +82,6 @@ class System:
         plt.scatter(0,0,s=np.log(R_Sun))
         
         colors =  (trajectory[:,:,3:] - np.min(trajectory[:,:,3:],axis=(0,1) )) / (np.max(trajectory[:,:,3:],axis=(0,1)) - np.min(trajectory[:,:,3:],axis=(0,1)))
-        print(colors)
 
         for i in range(len(self.planets)):
             plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=trajectory[:,i,2],c=colors[:,i])
@@ -95,24 +93,27 @@ class System:
 
         plt.show()
 
-
-
+# Create an instance of the System class
 solar_system = System()
 
-
+# Create instances of the Planet class
 earth = Planet("Earth",M_Earth,np.array([earth_sun_distance,0]),earth_average_speed * solar_system.get_random_direction(),R_Earth)
 jupiter = Planet("Jupiter",M_Jupiter,np.array([earth_sun_distance,0]),earth_average_speed * solar_system.get_random_direction(),R_Jupyter)
 saturn = Planet("Saturn",M_Saturn,np.array([earth_sun_distance,0]),earth_average_speed * solar_system.get_random_direction(),R_Saturn)
 
+# Add planets to the solar system
 solar_system.add_planet(earth)
 solar_system.add_planet(jupiter)
 solar_system.add_planet(saturn)
 
+# Run the simulation
+trajectory = solar_system.run(365*24*60)
 
-trajectory = solar_system.run(365*24)
+# Visualize the trajectory
 solar_system.visualize(trajectory)
-plt.savefig("solar_system.png")
 
+# Save the plot as an image
+plt.savefig("solar_system.png")
 
 
 
