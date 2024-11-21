@@ -9,36 +9,17 @@ from typing import List, Tuple
 
 
 #TODO 
-# expolation prob 
 # documentation
-# clean code check
 # test cases 
-
+# module 
 
 
 #physical parameters   
 # M => Mass 
 # R => Radius
 
-M_Sun:float  = 1.989e30
-M_Earth:float = 5.972e24
-M_Jupiter:float = 1.898e27
-M_Saturn:float = 5.683e26
 
-R_Jupyter:float = 69911e3
-R_Saturn:float = 58232e3
-R_Earth:float = 6371e3
-R_Sun:float = 696340e3
 
-JUPITER_SUN_DISTANCE:float = 778.57e9
-SATURN_SUN_DISTANCE:float = 1.429e12
-EARTH_SUN_DISTANCE:float = 1.496e11
-
-EARTH_AVERAGE_SPEED:float = 29780.0
-JUPITER_AVERAGE_SPEED:float = 13070.0
-SATURN_AVERAGE_SPEED:float = 9690.0
-
-GRAVITATIONAL_CONSTANT:float = 6.67430e-11
 
 # Define Planet class
 class Planet: 
@@ -72,6 +53,7 @@ class System:
         self.planets.append(planet)
 
     def callculate_Force_and_potential_energy(self, planet: Planet) -> np.ndarray:
+        GRAVITATIONAL_CONSTANT:float = 6.67430e-11 
         # intialize the force into zero 
         total_Force:np.ndarray = 0 
         potential_energy = 0 
@@ -81,9 +63,11 @@ class System:
         r_norm : np.ndarray = np.linalg.norm(r)
 
         # use the formula of F_(1,2)_hat = -G.m1.m2.r_(1,2)_hat/(r_(1,2)^2)
+        # use the formula of F_(1,2) = -G.m1.m2/r_(1,2)
 
         # calculate the force of the sun on the planet
         total_Force += -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass *r  / (r_norm**3)
+        # calculate the potential energy of the sun and the planet
         potential_energy += -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass / r_norm
 
         # calculate the force of the other planets on the planet
@@ -99,6 +83,7 @@ class System:
 
                 # calculate the force of the other planet on the planet
                 total_Force += -GRAVITATIONAL_CONSTANT * other_planet.mass * planet.mass *r  / (r_norm**3)
+                # calculate the potential energy of the other planet and the planet
                 potential_energy += -GRAVITATIONAL_CONSTANT * other_planet.mass * planet.mass / r_norm
         
         return total_Force,potential_energy
@@ -162,7 +147,7 @@ class System:
 
     def visualize(self, trajectory: np.ndarray,interval:int) -> None:
         # normalize the temperatures into [0,1] form closes to the farthest 
-        colors:np.ndarray = (trajectory[:, :, 2] - np.min(trajectory[:, :, 2], axis=(0) )) / (np.max(trajectory[:, :, 2], axis=(0)) - np.min(trajectory[:, :, 2], axis=(0)))
+        colors:np.ndarray = (trajectory[:, :, 4] - np.min(trajectory[:, :, 4], axis=(0) )) / (np.max(trajectory[:, :, 4], axis=(0)) - np.min(trajectory[:, :, 4], axis=(0)))
   
 
 
@@ -193,42 +178,100 @@ class System:
         plt.xlabel("X(m)")
         plt.ylabel("Y(m)") 
 
+
+        # save the plot as an image
+        plt.savefig("solar_system.png")
+
         # sshowing the plot
         plt.show()
 
 
 
-# Create an instance of the System class
-solar_system:System = System(1.989e30,0,60*60)
 
-# Create instances of the Planet class
-earth:Planet = Planet("Earth",M_Earth,
-EARTH_SUN_DISTANCE*solar_system.get_random_direction(),
-EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),
-R_Earth,"s")
+        # plot the kinetic energy, potential energy and mechanical energy of the system
+        plt.figure(figsize=(10, 10))
+        plt.title("Energy of the Solar System")
+        plt.xlabel("Time (s)")
+        plt.ylabel("Energy (J)")
 
-jupiter:Planet = Planet("Jupiter",M_Jupiter,
-JUPITER_SUN_DISTANCE*solar_system.get_random_direction(),
-JUPITER_AVERAGE_SPEED * solar_system.get_random_direction(),
-R_Jupyter,"o")
+        # calculate the sum of kinetic energy, potential energy and mechanical energy of the system
+        sum_kinetic_energy = np.sum(trajectory[:,:,6],axis=1)
+        sum_potential_energy = np.sum(trajectory[:,:,7],axis=1)
+        sum_mechanical_energy = sum_kinetic_energy + sum_potential_energy
 
+        # plot the sum of kinetic energy, potential energy and mechanical energy of the system
+        plt.plot(trajectory[:,0,5],sum_kinetic_energy )
+        plt.plot(trajectory[:,0,5], sum_potential_energy)
+        plt.plot(trajectory[:,0,5],sum_mechanical_energy )
 
-saturn:Planet = Planet("Saturn",M_Saturn,
-SATURN_SUN_DISTANCE* solar_system.get_random_direction(),
-SATURN_AVERAGE_SPEED * solar_system.get_random_direction(),
-R_Saturn,"^")
-
-# Add planets to the solar system
-solar_system.add_planet(earth)
-solar_system.add_planet(jupiter)
-solar_system.add_planet(saturn)
-
-# Run the simulation for a year
-trajectory:np.ndarray = solar_system.run(30*365*24)
+        # add legend to the plot
+        plt.legend(["Kinetic Energy","Potential Energy","Mechanical Energy"])
 
 
-# Visualize the trajectory
-solar_system.visualize(trajectory,24*30)
+        # save the plot as an image
+        plt.savefig("energy.png")
 
-# Save the plot as an image
-plt.savefig("solar_system.png")
+        # show the plot
+        plt.show()
+
+
+
+
+def main():
+    M_Sun:float  = 1.989e30
+    M_Earth:float = 5.972e24
+    M_Jupiter:float = 1.898e27
+    M_Saturn:float = 5.683e26
+
+    R_Jupyter:float = 69911e3
+    R_Saturn:float = 58232e3
+    R_Earth:float = 6371e3
+    R_Sun:float = 696340e3
+
+    JUPITER_SUN_DISTANCE:float = 778.57e9
+    SATURN_SUN_DISTANCE:float = 1.429e12
+    EARTH_SUN_DISTANCE:float = 1.496e11
+
+    EARTH_AVERAGE_SPEED:float = 29780.0
+    JUPITER_AVERAGE_SPEED:float = 13070.0
+    SATURN_AVERAGE_SPEED:float = 9690.0
+
+
+    # Create an instance of the System class
+    solar_system:System = System(1.989e30,0,60*60)
+
+    # Create instances of the Planet class
+    earth:Planet = Planet("Earth",M_Earth,
+    EARTH_SUN_DISTANCE*solar_system.get_random_direction(),
+    EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),
+    R_Earth,"s")
+
+    jupiter:Planet = Planet("Jupiter",M_Jupiter,
+    JUPITER_SUN_DISTANCE*solar_system.get_random_direction(),
+    JUPITER_AVERAGE_SPEED * solar_system.get_random_direction(),
+    R_Jupyter,"o")
+
+
+    saturn:Planet = Planet("Saturn",M_Saturn,
+    SATURN_SUN_DISTANCE* solar_system.get_random_direction(),
+    SATURN_AVERAGE_SPEED * solar_system.get_random_direction(),
+    R_Saturn,"^")
+
+    # Add planets to the solar system
+    solar_system.add_planet(earth)
+    solar_system.add_planet(jupiter)
+    solar_system.add_planet(saturn)
+
+    # Run the simulation for a year
+    trajectory:np.ndarray = solar_system.run(30*365*24)
+
+
+    # Visualize the trajectory
+    solar_system.visualize(trajectory,24*30)
+
+    # Save the plot as an image
+    plt.savefig("solar_system.png")
+
+
+if __name__ == "__main__":
+    main()
