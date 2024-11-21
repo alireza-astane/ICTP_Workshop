@@ -65,13 +65,16 @@ class System:
         self.Pos_Sun: np.ndarray = np.array([0,0])
         self.time:float = time
         self.time_step: float = time_step
+        self.kinetic_Energy = 0 
+        self.potential_Energy = 0
         
     def add_planet(self, planet: Planet) -> None:
         self.planets.append(planet)
 
-    def callculate_force(self, planet: Planet) -> np.ndarray:
+    def callculate_accelaration_and_potential_energy(self, planet: Planet) -> np.ndarray:
         # intialize the force into zero 
         total_Force:np.ndarray = 0 
+        potential_energy = 0 
 
         # calclulate the distance of planet from the sun of the system  
         r :np.ndarray = planet.position - self.Pos_Sun
@@ -81,6 +84,7 @@ class System:
 
         # calculate the force of the sun on the planet
         total_Force += -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass *r  / (r_norm**3)
+        potential_energy += -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass / r_norm
 
         # calculate the force of the other planets on the planet
         for other_planet in self.planets:
@@ -95,21 +99,24 @@ class System:
 
                 # calculate the force of the other planet on the planet
                 total_Force += -GRAVITATIONAL_CONSTANT * other_planet.mass * planet.mass *r  / (r_norm**3)
+                potential_energy += -GRAVITATIONAL_CONSTANT * other_planet.mass * planet.mass / r_norm
         
-        return total_Force
+        return total_Force,potential_energy
 
-    def update_planet_temp(self, planet: Planet) -> None:
 
-        # claclulate the distance of the planet from the sun of the solar system 
-        planet.temp =  np.linalg.norm(planet.position - self.Pos_Sun)
-
+        
     def update_planet(self, planet: Planet) -> None:
-
         # update the position of the planet with the planet's speed 
         planet.position += planet.velocity * self.time_step
+        # calculate the accelration and the potential energy 
+        accelration, potential_Energy = self.callculate_accelaration_and_potential_energy(planet)
         # update the velocity of the planet with the planet's acceleration
         planet.velocity += self.callculate_force(planet) / planet.mass * self.time_step
-        self.update_planet_temp(planet)
+        # claclulate the distance of the planet from the sun of the solar system to represent as the temp
+        planet.temp =  np.linalg.norm(planet.position - self.Pos_Sun)
+        # compute the kinetic energy of the planet 
+        planet.kinetic_Energy = 0.5*planet.mass*(planet.velocity)**2
+        planet.potential_Energy = potential_Energy
 
     def update_system(self) -> None:
 
@@ -123,10 +130,10 @@ class System:
     
     def run(self, n: int) -> np.ndarray:
 
-        # data array to store poses, velocities, and temps 
-        trajectory:np.ndarray = np.zeros((n, len(self.planets), 5))
+        # data array to store poses, velocities, temps , time , Kinetic energy and Potential energy
+        trajectory:np.ndarray = np.zeros((n, len(self.planets), 8))
         for i in tqdm(range(n)):
-            
+
             #update the systtem 
             self.update_system()
 
@@ -135,6 +142,12 @@ class System:
                 trajectory[i, j, :2] = planet.position
                 trajectory[i, j, 2:4] = planet.velocity
                 trajectory[i, j, 4] = planet.temp
+                trajectory[i, j, 6] = planet.kinetic_Energy
+                trajectory[i, j, 7] = planet.potential_Energy 
+
+
+            # set timeline of the system with respect to the time step
+            trajectory[i,:,5] = self.time 
 
         return trajectory
 
@@ -186,7 +199,7 @@ class System:
 
 
 # Create an instance of the System class
-solar_system:System = System(1.989e30)
+solar_system:System = System(1.989e30,0,60*60)
 
 # Create instances of the Planet class
 earth:Planet = Planet("Earth",M_Earth,
@@ -211,11 +224,11 @@ solar_system.add_planet(jupiter)
 solar_system.add_planet(saturn)
 
 # Run the simulation for a year
-trajectory:np.ndarray = solar_system.run(365*60*24)
+trajectory:np.ndarray = solar_system.run(30*365*24)
 
 
 # Visualize the trajectory
-solar_system.visualize(trajectory,60*24)
+solar_system.visualize(trajectory,24*30)
 
 # Save the plot as an image
 plt.savefig("solar_system.png")
