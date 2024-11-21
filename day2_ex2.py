@@ -71,7 +71,7 @@ class System:
     def add_planet(self, planet: Planet) -> None:
         self.planets.append(planet)
 
-    def callculate_accelaration_and_potential_energy(self, planet: Planet) -> np.ndarray:
+    def callculate_Force_and_potential_energy(self, planet: Planet) -> np.ndarray:
         # intialize the force into zero 
         total_Force:np.ndarray = 0 
         potential_energy = 0 
@@ -109,13 +109,13 @@ class System:
         # update the position of the planet with the planet's speed 
         planet.position += planet.velocity * self.time_step
         # calculate the accelration and the potential energy 
-        accelration, potential_Energy = self.callculate_accelaration_and_potential_energy(planet)
+        Force, potential_Energy = self.callculate_Force_and_potential_energy(planet)
         # update the velocity of the planet with the planet's acceleration
-        planet.velocity += self.callculate_force(planet) / planet.mass * self.time_step
+        planet.velocity += Force / planet.mass * self.time_step
         # claclulate the distance of the planet from the sun of the solar system to represent as the temp
         planet.temp =  np.linalg.norm(planet.position - self.Pos_Sun)
         # compute the kinetic energy of the planet 
-        planet.kinetic_Energy = 0.5*planet.mass*(planet.velocity)**2
+        planet.kinetic_Energy = 0.5*planet.mass*(np.linalg.norm(planet.velocity))**2
         planet.potential_Energy = potential_Energy
 
     def update_system(self) -> None:
