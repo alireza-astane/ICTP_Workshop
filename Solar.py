@@ -31,12 +31,12 @@ class Planet:
 
     def __init__(
         self,
-        name: str,
-        mass: float,
-        position: np.ndarray,
-        velocity: np.ndarray,
-        radius: float,
-        marker: str,
+        name,
+        mass,
+        position,
+        velocity,
+        radius,
+        marker,
     ):
         """
         Construct a Planet object.
@@ -60,13 +60,13 @@ class Planet:
         -------
         None
         """
-        self.name: str = name
-        self.mass: float = mass
-        self.position: np.ndarray = position
-        self.velocity: np.ndarray = velocity
-        self.temp: float = 0
-        self.radius: float = radius
-        self.marker: str = marker
+        self.name = name
+        self.mass = mass
+        self.position = position
+        self.velocity = velocity
+        self.temp = 0
+        self.radius = radius
+        self.marker = marker
 
 
 class System:
@@ -87,46 +87,51 @@ class System:
     add_planet(planet: Planet) -> None:
         Add a planet to the system object.
     callculate_Force_and_potential_energy(planet: Planet) -> np.ndarray:
-        Calculate the Force and potential energy of a specific planet using Newtons Gravity Law and return them.
+        Calculate the Force and potential energy of a specific planet using
+         Newtons Gravity Law and return them.
     update_planet(planet: Planet) -> None:
         Update the attrebutes of the planet in the system.
     update_system() -> None:
         Update the system of the solar system.
     run(n: int) -> np.ndarray:
-        Update the system for n time steps, store the data in the trajectory and return the trajectory of the system.
+        Update the system for n time steps, store the data in the trajectory
+         and return the trajectory of the system.
     get_random_direction() -> np.ndarray:
         Generate a random direction vector and normalize it to a unit vector.
     visualize(trajectory: np.ndarray, interval: int) -> None:
         Visualize the solar system with the planets and the sun in the plot.
     """
 
-    def __init__(self, M_Sun: float, R_Sun: float, time: int = 0, time_step: int = 60):
+    def __init__(self, M_Sun, R_Sun, time=0, time_step=60):
         """
-        construct a System object with the mass of the Sun, time and time step.
+        construct a System object with the mass of the Sun,
+         time and time step.
         """
-        self.planets: List[Planet] = []
-        self.M_Sun: float = M_Sun
-        self.Pos_Sun: np.ndarray = np.array([0, 0])
-        self.time: float = time
-        self.time_step: float = time_step
+        self.planets = []
+        self.M_Sun = M_Sun
+        self.Pos_Sun = np.array([0, 0])
+        self.time = time
+        self.time_step = time_step
         self.kinetic_Energy = 0
         self.potential_Energy = 0
         self.R_Sun = R_Sun
 
-    def add_planet(self, planet: Planet) -> None:
+    def add_planet(self, planet: Planet):
         """
         add a planet to the system object.
 
         Parameters
         ----------
         planet : Planet
-            a planet object in the system object with valid position and mass
+            a planet object in the system object with valid position
+             and mass
         """
         self.planets.append(planet)
 
-    def callculate_Force_and_potential_energy(self, planet: Planet) -> np.ndarray:
+    def calculate_Force_and_potential(self, planet: Planet):
         """
-        claculate the Force and potential energy of a specific planet using Newtons Gravity Law and return them.
+        claculate the Force and potential energy of
+         a specific planet using Newtons Gravity Law and return them.
         $$
         F_(1,2)_hat = -G.m1.m2.r_(1,2)_hat/(r_(1,2)^2)
         U_(1,2) = -G.m1.m2/r_(1,2)
@@ -137,14 +142,18 @@ class System:
         Initaializing the total energy into zero
         claculating the distance of planet from sun as distance
         calculating the force and potential energy with respect to the Sun
-        add the calculated force and potential energy in to the sum force and potential energy
+        add the calculated force and potential energy in to the sum force and
+         potential energy
 
-        calculate the force of the other planets on the planet for each planet in the system's planets list
-        check planet to avoid calculating for the same planet.according to Newtons's first law, objects cant exert force on themselves
+        calculate the force of the other planets on the planet for
+         each planet in the system's planets list
+        check planet to avoid calculating for the same planet.according to
+         Newtons's first law, objects cant exert force on themselves
         calculate the distance of the planet from the other planet
         calculate the force of the other planet on the planet for
         calculate the potential energy of the other planet and the planet
-        add the calculated force and potential energy in to the sum force and potential energy
+        add the calculated force and potential energy in to
+         the sum force and potential energy
 
         Parameters
         ----------
@@ -160,13 +169,13 @@ class System:
             total gravitational potential of the planet
         """
 
-        GRAVITATIONAL_CONSTANT: float = 6.67430e-11
+        GRAVITATIONAL_CONSTANT = 6.67430e-11
 
-        total_Force: np.ndarray = 0
+        total_Force = 0
         potential_energy = 0
 
-        distance: np.ndarray = planet.position - self.Pos_Sun
-        distance_norm: np.ndarray = np.linalg.norm(distance)
+        distance = planet.position - self.Pos_Sun
+        distance_norm = np.linalg.norm(distance)
 
         total_Force += (
             -GRAVITATIONAL_CONSTANT
@@ -181,8 +190,8 @@ class System:
 
         for other_planet in self.planets:
             if other_planet != planet:
-                distance: np.ndarray = planet.position - other_planet.position
-                distance_norm: np.ndarray = np.linalg.norm(distance)
+                distance = planet.position - other_planet.position
+                distance_norm = np.linalg.norm(distance)
 
                 total_Force += (
                     -GRAVITATIONAL_CONSTANT
@@ -200,13 +209,14 @@ class System:
 
         return total_Force, potential_energy
 
-    def update_planet(self, planet: Planet) -> None:
+    def update_planet(self, planet):
         """
         update the attrebutes of the planet in the system.
         update the position of the planet with the planet's speed
         calculate the accelration and the potential energy
         update the velocity of the planet with the planet's acceleration
-        claclulate the distance of the planet from the sun of the solar system to represent as the temp
+        claclulate the distance of the planet from the sun of
+         the solar system to represent as the temp
         compute the kinetic energy of the planet
 
         Parameters
@@ -222,7 +232,7 @@ class System:
 
         planet.position += planet.velocity * self.time_step
 
-        Force, potential_Energy = self.callculate_Force_and_potential_energy(planet)
+        Force, potential_Energy = self.calculate_Force_and_potential(planet)
 
         planet.velocity += Force / planet.mass * self.time_step
 
@@ -233,7 +243,7 @@ class System:
         )
         planet.potential_Energy = potential_Energy
 
-    def update_system(self) -> None:
+    def update_system(self):
         """
         update the system of the solar system.
         update the time
@@ -245,9 +255,10 @@ class System:
         for planet in self.planets:
             self.update_planet(planet)
 
-    def run(self, n: int) -> np.ndarray:
+    def run(self, n):
         """
-        update the system for n time steps, store the data in the trajectory and return the trajectory of the system.
+        update the system for n time steps, store the data in the trajectory
+         and return the trajectory of the system.
 
         Parameters
         ----------
@@ -257,10 +268,11 @@ class System:
         Returns
         -------
         np.ndarray
-            trajectory of the system with the poses, velocities, temps , time , Kinetic energy and Potential energy
+            trajectory of the system with the poses, velocities, temps, time,
+             Kinetic energy and Potential energy
         """
 
-        trajectory: np.ndarray = np.zeros((n, len(self.planets), 8))
+        trajectory = np.zeros((n, len(self.planets), 8))
         for i in tqdm(range(n)):
 
             self.update_system()
@@ -275,45 +287,48 @@ class System:
 
         return trajectory
 
-    def get_random_direction(self) -> np.ndarray:
+    def get_random_direction(self):
         """
-        generate a random direction vector and normalize it to a unit vector.
+        generate random direction vector and normalize it to a unit vector.
 
         Returns
         -------
         np.ndarray
             a random unit vector
         """
-        direction: np.ndarray = np.random.normal(-1, 1, 2)
+        direction = np.random.normal(-1, 1, 2)
         direction = direction / np.linalg.norm(direction)
         return direction
 
-    def visualize(self, trajectory: np.ndarray, interval: int) -> None:
+    def visualize(self, trajectory, interval):
         """
         visualize the solar system with the planets and the sun in the plot.
-        normalize the temperatures into [0,1] from closes to the farthest planet to the sun.
+        normalize the temperatures into [0,1] from closes
+         to the farthest planet to the sun.
 
         plot the Sun
-        plot the planets with the colors based on the temperature of the planets
-        plot the Kinetic Energy, Potential Energy and Mechanical Energy of the system
-        calculate the sum of kinetic energy, potential energy and mechanical energy of the system
-        plot the sum of kinetic energy, potential energy and mechanical energy of the system
+        plot the planets with the colors based on the temperature of
+         the planets
+        plot the Kinetic Energy, Potential Energy and
+         Mechanical Energy of the system
+        calculate the sum of kinetic energy, potential energy and
+         mechanical energy of the system
+        plot the sum of kinetic energy, potential energy and
+         mechanical energy of the system
 
 
         Parameters
         ----------
         trajectory : np.ndarray
-            the trajectory of the system with the poses, velocities, temps , time , Kinetic energy and Potential energy
+            the trajectory of the system with the poses, velocities, temps,
+             time , Kinetic energy and Potential energy
         interval : int
-            the interval between each point in the trajectory to be plotted in the plot
+            the interval between each point in the trajectory
+             to be plotted in the plot
         """
-        custom_colors: List[str] = ["red", "purple", "blue"]
-        custom_cmap: LinearSegmentedColormap = LinearSegmentedColormap.from_list(
-            "RedPurpleBlue", custom_colors
-        )
-        colors: np.ndarray = (
-            trajectory[:, :, 4] - np.min(trajectory[:, :, 4], axis=(0))
-        ) / (
+        custom_colors = ["red", "purple", "blue"]
+        custom_cmap = LinearSegmentedColormap.from_list("RedPurpleBlue", custom_colors)
+        colors = (trajectory[:, :, 4] - np.min(trajectory[:, :, 4], axis=(0))) / (
             np.max(trajectory[:, :, 4], axis=(0))
             - np.min(trajectory[:, :, 4], axis=(0))
         )
@@ -322,8 +337,8 @@ class System:
         plt.title("Solar System")
 
         for i in range(len(self.planets)):
-            size: np.ndarray = np.log(self.planets[i].radius)
-            marker: str = self.planets[i].marker
+            size = np.log(self.planets[i].radius)
+            marker = self.planets[i].marker
             plt.scatter(
                 trajectory[::interval, i, 0],
                 trajectory[::interval, i, 1],
