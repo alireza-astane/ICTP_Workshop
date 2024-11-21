@@ -55,7 +55,7 @@ class System:
         return -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass / r**3 * (planet.position - self.Pos_Sun) 
 
     def update_planet_temp(self,planet):
-        planet.temp =  1/np.linalg.norm(planet.position - self.Pos_Sun)
+        planet.temp =  np.linalg.norm(planet.position - self.Pos_Sun)
 
     def update_planet(self,planet):
         planet.position += planet.velocity * self.time_step
@@ -68,13 +68,13 @@ class System:
             self.time = self.time + self.time_step
     
     def run(self,n):
-        trajectory = np.zeros((n,len(self.planets),6))
+        trajectory = np.zeros((n,len(self.planets),4))
         for i in tqdm(range(n)):
             self.update()
             for j,planet in enumerate(self.planets):
                 trajectory[i,j,:2] = planet.position
                 trajectory[i,j,2] = np.log(planet.radius)
-                trajectory[i,j,3:] = planet.temp
+                trajectory[i,j,3] = planet.temp
 
         return trajectory
 
@@ -86,11 +86,15 @@ class System:
     def visualize(self,trajectory):
         plt.title("Solar System")
         plt.scatter(0,0,s=np.log(R_Sun))
-        
-        colors =  (trajectory[:,:,3:] - np.min(trajectory[:,:,3:],axis=(0,1) )) / (np.max(trajectory[:,:,3:],axis=(0,1)) - np.min(trajectory[:,:,3:],axis=(0,1)))
+                
+        colors = (trajectory[:,:,3] - np.min(trajectory[:,:,3],axis=(0) )) / (np.max(trajectory[:,:,3],axis=(0)) - np.min(trajectory[:,:,3],axis=(0)))
+  
+
+
 
         for i in range(len(self.planets)):
-            plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=trajectory[:,i,2],c=colors[:,i],cmap="seismic")
+            plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=trajectory[:,i,2],c=colors[:,i],cmap="seismic_r")
+
 
         plt.legend(["Sun"] + [p.name for p in self.planets])
 
@@ -98,6 +102,9 @@ class System:
         plt.ylabel("Y(m)") 
 
         plt.show()
+
+
+
 
 # Create an instance of the System class
 solar_system = System()
@@ -115,19 +122,9 @@ solar_system.add_planet(saturn)
 # Run the simulation
 trajectory = solar_system.run(365*24*60)
 
+
 # Visualize the trajectory
 solar_system.visualize(trajectory)
 
 # Save the plot as an image
 plt.savefig("solar_system.png")
-
-
-
-
-        
-
-        
-
-    
-
-
