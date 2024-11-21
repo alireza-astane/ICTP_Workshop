@@ -2,6 +2,17 @@
 import matplotlib.pyplot as plt 
 import numpy as np 
 from tqdm import tqdm
+from matplotlib.colors import LinearSegmentedColormap
+
+
+
+
+#TODO 
+# expolation prob 
+# documentation
+# type hints
+# clean code 
+# test cases 
 
 #physical parameters   
 # M => Mass 
@@ -29,13 +40,14 @@ GRAVITATIONAL_CONSTANT = 6.67430e-11
 
 # Define Planet class
 class Planet: 
-    def __init__(self,name,mass,position,velocity,radius):
+    def __init__(self,name,mass,position,velocity,radius,marker):
         self.name = name
         self.mass = mass
         self.position = position
         self.velocity = velocity
         self.temp = 0
         self.radius = radius
+        self.marker = marker
 
 # Define System class
 class System:
@@ -68,13 +80,12 @@ class System:
             self.time = self.time + self.time_step
     
     def run(self,n):
-        trajectory = np.zeros((n,len(self.planets),4))
+        trajectory = np.zeros((n,len(self.planets),3))
         for i in tqdm(range(n)):
             self.update()
             for j,planet in enumerate(self.planets):
                 trajectory[i,j,:2] = planet.position
-                trajectory[i,j,2] = np.log(planet.radius)
-                trajectory[i,j,3] = planet.temp
+                trajectory[i,j,2] = planet.temp
 
         return trajectory
 
@@ -85,18 +96,24 @@ class System:
 
     def visualize(self,trajectory):
         plt.title("Solar System")
-        plt.scatter(0,0,s=np.log(R_Sun))
+        
                 
-        colors = (trajectory[:,:,3] - np.min(trajectory[:,:,3],axis=(0) )) / (np.max(trajectory[:,:,3],axis=(0)) - np.min(trajectory[:,:,3],axis=(0)))
+        colors = (trajectory[:,:,2] - np.min(trajectory[:,:,2],axis=(0) )) / (np.max(trajectory[:,:,2],axis=(0)) - np.min(trajectory[:,:,2],axis=(0)))
   
 
 
+        # Define a custom colormap
+        custom_colors = ["red", "purple", "blue"]  # Colors to transition through
+        custom_cmap = LinearSegmentedColormap.from_list("RedPurpleBlue", custom_colors)
+
 
         for i in range(len(self.planets)):
-            plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=trajectory[:,i,2],c=colors[:,i],cmap="seismic_r")
+            size = np.log(planets[i].radius)
+            marker = planets[i].marker
+            plt.scatter(trajectory[:,i,0],trajectory[:,i,1],s=size,c=colors[:,i],cmap=custom_cmap,marker=marker)
 
-
-        plt.legend(["Sun"] + [p.name for p in self.planets])
+        plt.scatter(0,0,s=np.log(R_Sun),c="yellow",marker="*")
+        plt.legend( [p.name for p in self.planets] + ["Sun"] )
 
         plt.xlabel("X(m)")
         plt.ylabel("Y(m)") 
@@ -110,9 +127,9 @@ class System:
 solar_system = System()
 
 # Create instances of the Planet class
-earth = Planet("Earth",M_Earth,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Earth)
-jupiter = Planet("Jupiter",M_Jupiter,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Jupyter)
-saturn = Planet("Saturn",M_Saturn,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Saturn)
+earth = Planet("Earth",M_Earth,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Earth,"s")
+jupiter = Planet("Jupiter",M_Jupiter,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Jupyter,"o")
+saturn = Planet("Saturn",M_Saturn,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Saturn,"^")
 
 # Add planets to the solar system
 solar_system.add_planet(earth)
