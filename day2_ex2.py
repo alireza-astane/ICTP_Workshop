@@ -53,22 +53,25 @@ class Planet:
 
 # Define System class
 class System:
-    time_step: int = 60 # 1 minute
+
 
     # Define a custom colormap
     custom_colors: List[str] = ["red", "purple", "blue"]  # Colors to transition through
     custom_cmap:LinearSegmentedColormap = LinearSegmentedColormap.from_list("RedPurpleBlue", custom_colors)
     
-    def __init__(self, time: int = 0):
+    def __init__(self, M_Sun:float ,time: int = 0,  time_step: int = 60 ):    # 1 minute as default time_step 
         self.planets: List[Planet] = []
-        self.M_Sun: float = 1.989e30
+        self.M_Sun: float = M_Sun
         self.Pos_Sun: np.ndarray = np.array([0,0])
         self.time:float = time
+        self.time_step: float = time_step
         
     def add_planet(self, planet: Planet) -> None:
         self.planets.append(planet)
 
-    def callculate_force_with_sun(self, planet: Planet) -> np.ndarray:
+    def callculate_force(self, planet: Planet) -> np.ndarray:
+        # intialize the force into zero 
+        total_Force:np.ndarray = 0 
 
         # calclulate the distance of planet from the sun of the system  
         r :np.ndarray = planet.position - self.Pos_Sun
@@ -76,16 +79,13 @@ class System:
 
         # use the formula of F_(1,2)_hat = -G.m1.m2.r_(1,2)_hat/(r_(1,2)^2)
 
-        # intialize the force into zero 
-        total_Force:np.ndarray = 0 
-
         # calculate the force of the sun on the planet
         total_Force += -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass *r  / (r_norm**3)
 
         # calculate the force of the other planets on the planet
         for other_planet in self.planets:
 
-            # to avoid calculating for the same planet / Newtons's first law objects cant exert force on themselves
+            # to avoid calculating for the same planet / Newtons's first law: objects cant exert force on themselves
             if other_planet != planet:
 
                 # calculate the distance of the planet from the other planet
@@ -94,7 +94,7 @@ class System:
 
 
                 # calculate the force of the other planet on the planet
-                total_Force += -GRAVITATIONAL_CONSTANT * other_planet.mass * planet.mass *r  / (r**3)
+                total_Force += -GRAVITATIONAL_CONSTANT * other_planet.mass * planet.mass *r  / (r_norm**3)
         
         return total_Force
 
@@ -108,7 +108,7 @@ class System:
         # update the position of the planet with the planet's speed 
         planet.position += planet.velocity * self.time_step
         # update the velocity of the planet with the planet's acceleration
-        planet.velocity += self.callculate_force_with_sun(planet) / planet.mass * self.time_step
+        planet.velocity += self.callculate_force(planet) / planet.mass * self.time_step
         self.update_planet_temp(planet)
 
     def update_system(self) -> None:
@@ -186,12 +186,24 @@ class System:
 
 
 # Create an instance of the System class
-solar_system:System = System()
+solar_system:System = System(1.989e30)
 
 # Create instances of the Planet class
-earth:Planet = Planet("Earth",M_Earth,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Earth,"s")
-jupiter:Planet = Planet("Jupiter",M_Jupiter,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Jupyter,"o")
-saturn:Planet = Planet("Saturn",M_Saturn,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Saturn,"^")
+earth:Planet = Planet("Earth",M_Earth,
+EARTH_SUN_DISTANCE*solar_system.get_random_direction(),
+EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),
+R_Earth,"s")
+
+jupiter:Planet = Planet("Jupiter",M_Jupiter,
+JUPITER_SUN_DISTANCE*solar_system.get_random_direction(),
+JUPITER_AVERAGE_SPEED * solar_system.get_random_direction(),
+R_Jupyter,"o")
+
+
+saturn:Planet = Planet("Saturn",M_Saturn,
+SATURN_SUN_DISTANCE* solar_system.get_random_direction(),
+SATURN_AVERAGE_SPEED * solar_system.get_random_direction(),
+R_Saturn,"^")
 
 # Add planets to the solar system
 solar_system.add_planet(earth)
@@ -199,7 +211,7 @@ solar_system.add_planet(jupiter)
 solar_system.add_planet(saturn)
 
 # Run the simulation for a year
-trajectory:np.ndarray = solar_system.run(365*24*60)
+trajectory:np.ndarray = solar_system.run(365*60*24)
 
 
 # Visualize the trajectory
