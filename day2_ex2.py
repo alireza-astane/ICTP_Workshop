@@ -43,13 +43,13 @@ GRAVITATIONAL_CONSTANT:float = 6.67430e-11
 # Define Planet class
 class Planet: 
     def __init__(self, name: str, mass: float, position: np.ndarray, velocity: np.ndarray, radius: float, marker: str):
-        self.name = name
-        self.mass = mass
-        self.position = position
-        self.velocity = velocity
-        self.temp = 0
-        self.radius = radius
-        self.marker = marker
+        self.name:str = name
+        self.mass:float = mass
+        self.position:np.ndarray = position
+        self.velocity:np.ndarray = velocity
+        self.temp:float = 0
+        self.radius:float = radius
+        self.marker:str = marker
 
 # Define System class
 class System:
@@ -57,13 +57,13 @@ class System:
 
     # Define a custom colormap
     custom_colors: List[str] = ["red", "purple", "blue"]  # Colors to transition through
-    custom_cmap = LinearSegmentedColormap.from_list("RedPurpleBlue", custom_colors)
+    custom_cmap:LinearSegmentedColormap = LinearSegmentedColormap.from_list("RedPurpleBlue", custom_colors)
     
     def __init__(self, time: int = 0):
         self.planets: List[Planet] = []
         self.M_Sun: float = 1.989e30
         self.Pos_Sun: np.ndarray = np.array([0,0])
-        self.time = time
+        self.time:float = time
         
     def add_planet(self, planet: Planet) -> None:
         self.planets.append(planet)
@@ -71,10 +71,32 @@ class System:
     def callculate_force_with_sun(self, planet: Planet) -> np.ndarray:
 
         # calclulate the distance of planet from the sun of the system  
-        r = np.linalg.norm(planet.position - self.Pos_Sun)
+        r :np.ndarray = planet.position - self.Pos_Sun
+        r_norm : np.ndarray = np.linalg.norm(r)
 
-        # use the formula of F_hat = -G.M.m.r_hat/(r^2)
-        return -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass / r**3 * (planet.position - self.Pos_Sun) 
+        # use the formula of F_(1,2)_hat = -G.m1.m2.r_(1,2)_hat/(r_(1,2)^2)
+
+        # intialize the force into zero 
+        total_Force:np.ndarray = 0 
+
+        # calculate the force of the sun on the planet
+        total_Force += -GRAVITATIONAL_CONSTANT * self.M_Sun * planet.mass *r  / (r_norm**3)
+
+        # calculate the force of the other planets on the planet
+        for other_planet in self.planets:
+
+            # to avoid calculating for the same planet / Newtons's first law objects cant exert force on themselves
+            if other_planet != planet:
+
+                # calculate the distance of the planet from the other planet
+                r:np.ndarray = planet.position - other_planet.position
+                r_norm : np.ndarray = np.linalg.norm(r)
+
+
+                # calculate the force of the other planet on the planet
+                total_Force += -GRAVITATIONAL_CONSTANT * other_planet.mass * planet.mass *r  / (r**3)
+        
+        return total_Force
 
     def update_planet_temp(self, planet: Planet) -> None:
 
@@ -102,7 +124,7 @@ class System:
     def run(self, n: int) -> np.ndarray:
 
         # data array to store poses, velocities, and temps 
-        trajectory = np.zeros((n, len(self.planets), 5))
+        trajectory:np.ndarray = np.zeros((n, len(self.planets), 5))
         for i in tqdm(range(n)):
             
             #update the systtem 
@@ -119,33 +141,34 @@ class System:
     def get_random_direction(self) -> np.ndarray:
 
         # create a normal random vector
-        direction = np.random.normal(-1, 1, 2)
+        direction:np.ndarray = np.random.normal(-1, 1, 2)
 
         # normalize the vector into a unit vector 
         direction = direction / np.linalg.norm(direction)
         return direction
 
-    def visualize(self, trajectory: np.ndarray) -> None:
+    def visualize(self, trajectory: np.ndarray,interval:int) -> None:
         # normalize the temperatures into [0,1] form closes to the farthest 
-        colors = (trajectory[:, :, 2] - np.min(trajectory[:, :, 2], axis=(0) )) / (np.max(trajectory[:, :, 2], axis=(0)) - np.min(trajectory[:, :, 2], axis=(0)))
+        colors:np.ndarray = (trajectory[:, :, 2] - np.min(trajectory[:, :, 2], axis=(0) )) / (np.max(trajectory[:, :, 2], axis=(0)) - np.min(trajectory[:, :, 2], axis=(0)))
   
-        # add title to the plot 
-        plt.title("Solar System")
+
 
         # config the size of the plot 
-
         plt.figure(figsize=(10, 10))
+
+        # add title to the plot 
+        plt.title("Solar System")
 
         # plotting each planet in the solar system
         for i in range(len(self.planets)):
             # use the log of radius as the size of plnet points
-            size = np.log(self.planets[i].radius)
+            size:np.ndarray = np.log(self.planets[i].radius)
 
             # use the initalized marker to mark planets in the plot
-            marker = self.planets[i].marker
+            marker:str = self.planets[i].marker
 
             # plot planets with thier position in the trajectory 
-            plt.scatter(trajectory[:, i, 0], trajectory[:, i, 1], s=size, c=colors[:, i], cmap=custom_cmap, marker=marker)
+            plt.scatter(trajectory[::interval, i, 0], trajectory[::interval, i, 1], s=size, c=colors[::interval, i], cmap=self.custom_cmap, marker=marker)
 
         # plotting the Sun 
         plt.scatter(0, 0, s=np.log(R_Sun), c="yellow", marker="*")
@@ -163,24 +186,24 @@ class System:
 
 
 # Create an instance of the System class
-solar_system = System()
+solar_system:System = System()
 
 # Create instances of the Planet class
-earth = Planet("Earth",M_Earth,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Earth,"s")
-jupiter = Planet("Jupiter",M_Jupiter,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Jupyter,"o")
-saturn = Planet("Saturn",M_Saturn,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Saturn,"^")
+earth:Planet = Planet("Earth",M_Earth,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Earth,"s")
+jupiter:Planet = Planet("Jupiter",M_Jupiter,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Jupyter,"o")
+saturn:Planet = Planet("Saturn",M_Saturn,np.array([EARTH_SUN_DISTANCE,0]),EARTH_AVERAGE_SPEED * solar_system.get_random_direction(),R_Saturn,"^")
 
 # Add planets to the solar system
 solar_system.add_planet(earth)
 solar_system.add_planet(jupiter)
 solar_system.add_planet(saturn)
 
-# Run the simulation
-trajectory = solar_system.run(365*24*60)
+# Run the simulation for a year
+trajectory:np.ndarray = solar_system.run(365*24*60)
 
 
 # Visualize the trajectory
-solar_system.visualize(trajectory)
+solar_system.visualize(trajectory,60*24)
 
 # Save the plot as an image
 plt.savefig("solar_system.png")
