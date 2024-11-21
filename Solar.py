@@ -1,6 +1,4 @@
-"""
-This module is used to simulate the solar system with the planets and the Sun.
-"""
+"""This module is used to simulate the solar system with the planets and the Sun."""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -104,8 +102,7 @@ class System:
 
     def __init__(self, M_Sun, R_Sun, time=0, time_step=60):
         """
-        construct a System object with the mass of the Sun,
-         time and time step.
+        construct a System object with the mass of the Sun, time and time step.
         """
         self.planets = []
         self.M_Sun = M_Sun
