@@ -143,8 +143,8 @@ class System:
          potential energy
 
         calculate the force of the other planets on the planet for
-         each planet in the system's planets list
-        check planet to avoid calculating for the same planet.according to
+        each planet in the system's planets list check planet to avoid
+        calculating for the same planet.according to
          Newtons's first law, objects cant exert force on themselves
         calculate the distance of the planet from the other planet
         calculate the force of the other planet on the planet for
